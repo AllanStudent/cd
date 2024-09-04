@@ -1,60 +1,41 @@
-name: Main Workflow
-
+name: Build and Push Docker Image
+ 
 on:
   push:
     branches:
       - master
-  pull_request:
-    types: [opened, synchronize, reopened]
-
-jobs:
-  build:
+ 
+jobs: 
+  sonarcloud:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'adopt'
-
-    - name: Verify Java version
-      run: java -version
-
     - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@v2.1.0
-      with:
-        projectBaseDir: .
-        args: >
-          -Dsonar.verbose=true
-          -Dsonar.analysis.mode=publish
-          -Dsonar.log.level=DEBUG
+      uses: sonarsource/sonarcloud-github-action@<action version> # Ex: v2.1.0, See the latest version at https://github.com/marketplace/actions/sonarcloud-scan
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/cd:${{ github.sha }}
-
-    - name: Clean the workspace
-      uses: docker://alpine
-      with:
-        args: /bin/sh -c "find \"${GITHUB_WORKSPACE}\" -mindepth 1 ! -name . -prune -exec rm -rf {} +"
+    build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+ 
+      # Log in to DockerHub using secrets
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+ 
+      # Build the Docker image
+      - name: Build Docker image
+        run: docker build -t <your-dockerhub-username>/cd:${{ github.sha }} .
+ 
+      # Push the Docker image to DockerHub
+      - name: Push Docker image
+        run: docker push <your-dockerhub-username>/cd:${{ github.sha }}  
