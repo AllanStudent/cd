@@ -1,4 +1,4 @@
-name: Build, Analyze, and Push Docker Image
+name: Main Workflow
 
 on:
   push:
@@ -58,4 +58,3 @@ jobs:
       uses: docker://alpine
       with:
         args: /bin/sh -c "find \"${GITHUB_WORKSPACE}\" -mindepth 1 ! -name . -prune -exec rm -rf {} +"
-        
