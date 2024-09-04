@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Analyze, and Push Docker Image
 
 on:
   push:
@@ -12,6 +12,22 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Set up JDK 11 # Assure que SonarScanner fonctionne
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+
+    - name: Run SonarCloud Scan
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: |
+        sonar-scanner \
+        -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
+        -Dsonar.organization=${{ secrets.SONAR_ORG }} \
+        -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+        -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -28,3 +44,4 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/cd:${{ github.sha }}
+
