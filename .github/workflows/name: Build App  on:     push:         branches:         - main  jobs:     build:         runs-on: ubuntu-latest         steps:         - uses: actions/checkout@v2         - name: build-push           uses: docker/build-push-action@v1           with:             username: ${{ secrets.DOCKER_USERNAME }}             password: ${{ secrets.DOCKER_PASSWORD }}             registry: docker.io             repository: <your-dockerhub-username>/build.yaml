@@ -16,5 +16,5 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
             registry: docker.io
-            repository: allanisen/cd
+            repository: C:\Users\allan\Desktop\DevelopmentEnvironment
             tag_with_sha: true
