@@ -13,17 +13,23 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up JDK 11 # Assure que SonarScanner fonctionne
+    - name: Set up JDK 11
       uses: actions/setup-java@v3
       with:
         java-version: '11'
         distribution: 'adopt'
 
+    - name: Install SonarScanner
+      run: |
+        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+        unzip sonar-scanner-cli-4.8.0.2856-linux.zip
+        export PATH="$PATH:$(pwd)/sonar-scanner-4.8.0.2856-linux/bin"
+
     - name: Run SonarCloud Scan
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-        sonar-scanner \
+        ./sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
         -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
         -Dsonar.organization=${{ secrets.SONAR_ORG }} \
         -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
@@ -44,4 +50,3 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/cd:${{ github.sha }}
-        
