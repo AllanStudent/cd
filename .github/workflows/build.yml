@@ -3,15 +3,19 @@ name: Build, Analyze, and Push Docker Image
 on:
   push:
     branches:
-      - master
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
-  build:
+  sonarcloud:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Disabling shallow clone for more accurate analysis
 
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -20,12 +24,15 @@ jobs:
         distribution: 'adopt'
 
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@v2
+      uses: sonarsource/sonarcloud-github-action@v2.1.0 # Replace with the latest version if needed
+      with:
+        projectBaseDir: .
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Required for GitHub integration
         SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
         SONAR_ORG: ${{ secrets.SONAR_ORG }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
