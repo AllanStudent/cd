@@ -53,3 +53,8 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/cd:${{ github.sha }}
+
+    - name: Clean the workspace
+      uses: docker://alpine
+      with:
+        args: /bin/sh -c "find \"${GITHUB_WORKSPACE}\" -mindepth 1 ! -name . -prune -exec rm -rf {} +"
