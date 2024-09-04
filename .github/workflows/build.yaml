@@ -1,29 +1,30 @@
 name: Build and Push Docker Image
- 
+
 on:
   push:
     branches:
       - master
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout the repository code
-      - name: Checkout code
-        uses: actions/checkout@v2
- 
-      # Log in to DockerHub using secrets
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
- 
-      # Build the Docker image
-      - name: Build Docker image
-        run: docker build -t allanisen/cd:${{ github.sha }} .
- 
-      # Push the Docker image to DockerHub
-      - name: Push Docker image
-        run: docker push allanisen/cd:${{ github.sha }}
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/cd:${{ github.sha }}
